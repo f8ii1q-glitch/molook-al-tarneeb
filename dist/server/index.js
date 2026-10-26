@@ -3886,9 +3886,10 @@ function createHttpHandler(options) {
     const isHtml = ext === ".html";
     const mime = MIME[ext] ?? "application/octet-stream";
     const immutable = pathname.startsWith("/assets/");
+    const revalidate = isHtml || pathname === "/sw.js";
     const headers = {
       "Content-Type": mime,
-      "Cache-Control": immutable ? "public, max-age=31536000, immutable" : isHtml ? "no-cache" : "public, max-age=3600",
+      "Cache-Control": immutable ? "public, max-age=31536000, immutable" : revalidate ? "no-cache" : "public, max-age=3600",
       ETag: `W/"${stats.size.toString(16)}-${Math.floor(stats.mtimeMs).toString(16)}"`,
       Vary: "Accept-Encoding",
       ...securityHeaders(req.headers.host, isHtml, isHttps(req))
@@ -8522,7 +8523,7 @@ var SlidingWindowCounter = class {
   }
 };
 
-// server/security/input.ts
+// shared/name.ts
 var MAX_NAME_LENGTH = 20;
 var DISALLOWED = /[^\p{L}\p{M}\p{N}\p{Extended_Pictographic}️ ._'’\-]/gu;
 function sanitizeName(raw) {

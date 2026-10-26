@@ -13,7 +13,7 @@
 | الرخصة المفتوحة المصدر | لا توجد. لم تُضَف رخصة MIT أو Apache أو غيرهما إلى المشروع نفسه |
 | الإصدار | 1.0.0 |
 
-**الوصف:** موقع من صفحتين. الأولى «صفحة الأسطورة» الفكاهية عن صاحب المشروع بوصفه «أعظم لاعب طرنيب في التاريخ» (مزحة صريحة بلا أرقام أو إنجازات حقيقية). والثانية لعبة طرنيب حقيقية متعددة اللاعبين لحظيًا: أربعة لاعبين من أجهزة مختلفة، شراكات ثابتة (جنوب/شمال ضد شرق/غرب)، غرف برموز دعوة، والخادم هو الحَكَم الوحيد على الحالة. الواجهة عربية كاملة (RTL) مع ترجمة إنجليزية.
+**الوصف:** موقع من صفحتين. الأولى «صفحة الأسطورة» الفكاهية عن صاحب المشروع بوصفه «أعظم لاعب طرنيب في التاريخ» (مزحة صريحة بلا أرقام أو إنجازات حقيقية). والثانية لعبة طرنيب بوضعين: أونلاين متعدد اللاعبين لحظيًا (أربعة لاعبين من أجهزة مختلفة، شراكات ثابتة جنوب/شمال ضد شرق/غرب، غرف برموز دعوة، والخادم هو الحَكَم الوحيد على الحالة)، و«العب وحدك» ضد الكمبيوتر داخل المتصفح بلا إنترنت. الواجهة عربية كاملة (RTL) مع ترجمة إنجليزية.
 
 ## 2. ما أُنشئ خصيصًا للمشروع (مملوك لصاحب المشروع)
 
@@ -21,13 +21,13 @@
 
 | المسار | المحتوى |
 |---|---|
-| `engine/` | محرك لعبة الطرنيب: الأوراق والخلط الآمن والتوزيع والمزايدة والأكلات والنقاط ونهاية المباراة ومنظور اللاعب |
+| `engine/` | محرك لعبة الطرنيب: الأوراق والخلط الآمن والتوزيع والمزايدة والأكلات والنقاط ونهاية المباراة ومنظور اللاعب، واللاعب الآلي `bot.ts` (قواعد استراتيجية كُتبت للمشروع) |
 | `server/` | الخادم: الغرف والجلسات والاتصال اللحظي وحدود المعدل والتحقق من المدخلات وتخزين SQLite وخدمة الملفات الثابتة |
 | `shared/` | البروتوكول بين الواجهة والخادم والتحقق من الرسائل ورموز الغرف والإعدادات المركزية `siteConfig.ts` |
-| `client/` (الشيفرة) | صفحتا الموقع، مكونات الواجهة، الاتصال اللحظي من جهة المتصفح، المسار الداخلي |
+| `client/` (الشيفرة) | صفحتا الموقع، مكونات الواجهة، الاتصال اللحظي من جهة المتصفح، المسار الداخلي، جلسة اللعب الفردي المحلية (`client/solo/`)، وعامل الخدمة (`client/service-worker.js`) وبيان التطبيق |
 | `client/i18n/` | نصوص الواجهة بالعربية والإنجليزية (بما فيها أسماء الأنواع وعبارتا نهاية المباراة) |
 | `client/styles/` | الهوية البصرية: الألوان والتخطيط والحركة وتصميم الأوراق والطاولة |
-| `client/components/Icons.tsx`، `client/public/*.svg` | الأيقونات ورموز الأنواع والزخرفة: مرسومة داخل المشروع، لا أيقونات مأخوذة من حزم خارجية |
+| `client/components/Icons.tsx`، `client/public/*.svg`، `client/public/icons/`، `client/public/apple-touch-icon.png` | الأيقونات ورموز الأنواع والزخرفة وأيقونات التطبيق (PNG مولَّدة من شعار التاج المرسوم داخل المشروع): لا أيقونات مأخوذة من حزم خارجية |
 | `tests/` | اختبارات الوحدات والتكامل والواجهة الكاملة (e2e) ومساعداتها |
 | `scripts/`، `deploy/` | سكربتات البناء والتطوير وتوليد حزمة النشر، وقوالب النشر (Dockerfile وrender.yaml وشرح الخطوات) |
 | `README.md`، `LICENSE`، `OWNERSHIP.md`، `docs/`، `Dockerfile`، `.env.example` | التوثيق وملفات الإعداد |
@@ -93,7 +93,7 @@
 |---|---|
 | Project name | **MOLOOK AL TARNEEB (ملوك الطرنيب)** |
 | Owner | **Abdullah bin Qunayfidh Al-Anazi** (the Latin spelling is a suggestion and may be changed) |
-| Description | A two-page website: a satirical "legend" page about the owner, and a real-time 4-player online Tarneeb card game with a server-authoritative engine. Arabic (RTL) with a full English translation. |
+| Description | A two-page website: a satirical "legend" page about the owner, and a Tarneeb card game with two modes: a real-time 4-player online game with a server-authoritative engine, and an offline-capable solo mode against computer players that runs entirely in the browser. Arabic (RTL) with a full English translation. |
 | Created | 2026-10-26 |
 | License | Proprietary, all rights reserved; no redistribution or resale without the owner's written permission (see `LICENSE`). No open-source license was added. |
 
