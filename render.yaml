@@ -1,0 +1,17 @@
+# مخطط Render (Blueprint) لنشر «ملوك الطرنيب» على الخطة المجانية.
+# المرجع: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: molook-al-tarneeb
+    runtime: docker
+    plan: free
+    # اخترنا فرانكفورت لأنها الأقرب جغرافيًا للسعودية بين مناطق Render (تقدير لا قياس).
+    region: frankfurt
+    healthCheckPath: /healthz
+    envVars:
+      # كل الزوار يظهرون للخادم بعنوان وكيل Render لأن ترتيب ترويسة X-Forwarded-For عنده
+      # غير موثّق، فلا نثق بها. النتيجة: حدود "لكل عنوان" تصير حدودًا عامة، فنرفع سقف الاتصالات.
+      - key: TRUST_PROXY
+        value: "false"
+      - key: MAX_CONNECTIONS_PER_IP
+        value: "500"

@@ -1,0 +1,116 @@
+ملوك الطرنيب | MOLOOK AL TARNEEB
+رخصة خاصة — جميع الحقوق محفوظة
+Proprietary License — All Rights Reserved
+
+© 2026 عبدالله بن قنيفذ العنزي (Abdullah bin Qunayfidh Al-Anazi). جميع الحقوق محفوظة.
+© 2026 Abdullah bin Qunayfidh Al-Anazi. All rights reserved.
+
+════════════════════════════════════════════════════════════════════════
+النص العربي
+════════════════════════════════════════════════════════════════════════
+
+1. طبيعة هذه الرخصة
+   هذا المشروع خاص وليس مفتوح المصدر. لا تمنح هذه الوثيقة أي شخص حق نسخ المشروع
+   أو توزيعه أو بيعه، وكل حق لم يُمنح فيها صراحةً فهو محفوظ لصاحب المشروع.
+
+2. المقصود بـ«المشروع»
+   كل ما أُنشئ خصيصًا لموقع «ملوك الطرنيب»: الشيفرة المصدرية (الواجهة والخادم ومحرك
+   اللعبة والاختبارات وسكربتات البناء)، والتصميم البصري والأيقونات والأصول المرسومة
+   داخل المشروع، والنصوص العربية والإنجليزية، والتوثيق. ويُستثنى منه ما هو موضح في
+   البند 7 (المكونات الخارجية).
+
+3. ما هو غير مسموح به دون إذن كتابي مسبق من صاحب المشروع
+   أ. نسخ المشروع أو أي جزء جوهري منه، أو نشره، أو رفعه إلى مستودع أو خدمة استضافة عامة.
+   ب. توزيعه أو إعادة توزيعه، كاملًا أو جزئيًا، بصيغته الأصلية أو بعد تعديله.
+   ج. بيعه أو إعادة بيعه أو تأجيره أو ترخيصه من الباطن أو تضمينه في منتج أو خدمة مدفوعة.
+   د. تشغيل نسخة منه على خادم لإتاحتها للآخرين بوصفها خدمة، سواء مجانًا أو بمقابل.
+   هـ. إنشاء أعمال مشتقة منه أو استخدام اسمه أو هويته البصرية أو نصوصه في مشروع آخر.
+   و. إزالة أو تعديل إشعارات حقوق النشر أو اسم صاحب المشروع أو هذه الرخصة.
+
+4. ما هو مسموح به
+   أ. صاحب المشروع، ومن يمنحه صاحب المشروع إذنًا كتابيًا صريحًا، بالحدود المذكورة في
+      ذلك الإذن.
+   ب. زوّار الموقع المنشور رسميًا من صاحبه يستخدمونه للعب مجانًا عبر المتصفح. هذا
+      استخدام للخدمة وليس ترخيصًا للشيفرة المصدرية أو للأصول.
+   ج. القراءة الشخصية غير التجارية للملفات التي سلّمها صاحب المشروع لهم، دون نسخها أو
+      توزيعها خارج ما يسمح به البند 3.
+
+5. طلب الإذن
+   يُطلب الإذن الكتابي من صاحب المشروع مباشرة. لا تتضمن هذه الوثيقة وسيلة اتصال
+   مخصصة لذلك، ويُرجع إلى صاحب المشروع في أي طلب.
+
+6. إخلاء المسؤولية
+   يُقدَّم المشروع «كما هو» دون أي ضمان صريح أو ضمني، بما في ذلك ضمان الملاءمة لغرض
+   معيّن أو خلوه من الأخطاء. لا يتحمل صاحب المشروع المسؤولية عن أي ضرر ينشأ عن
+   استخدامه أو العجز عن استخدامه، بالقدر الذي يسمح به النظام المعمول به.
+
+7. المكونات الخارجية
+   يستخدم المشروع مكتبات برمجية مفتوحة المصدر مملوكة لأصحابها وخاضعة لتراخيصها الخاصة
+   (مثل React وws وzod). لا تغيّر هذه الرخصة شروط تلك المكتبات ولا تنقل ملكيتها. تفاصيلها
+   في ملف OWNERSHIP.md، ونصوص تراخيصها المحزومة في الملف
+   dist/public/third-party-licenses.txt بعد تنفيذ أمر البناء. لعبة الطرنيب نفسها لعبة
+   ورق تقليدية، وقواعدها غير مملوكة لأحد؛ تشمل هذه الرخصة تنفيذ المشروع المحدد وتصميمه
+   ونصوصه لا قواعد اللعبة.
+
+8. لغة الوثيقة
+   كُتبت هذه الرخصة بالعربية والإنجليزية. عند أي اختلاف في المعنى يُعتمد النص العربي.
+
+════════════════════════════════════════════════════════════════════════
+English text
+════════════════════════════════════════════════════════════════════════
+
+1. Nature of this license
+   This project is private and is NOT open source. Nothing in this document grants
+   anyone the right to copy, distribute or sell the project. Every right not expressly
+   granted here is reserved by the project owner.
+
+2. What "the Project" means
+   Everything created specifically for the "Molook Al Tarneeb" website: the source
+   code (client, server, game engine, tests, build scripts), the visual design, the
+   icons and graphics drawn inside the project, the Arabic and English texts, and the
+   documentation. Third-party components described in section 7 are excluded.
+
+3. Not permitted without the owner's prior written permission
+   a. Copying the Project or any substantial part of it, publishing it, or uploading it
+      to a public repository or hosting service.
+   b. Distributing or redistributing it, in whole or in part, modified or unmodified.
+   c. Selling, reselling, renting or sublicensing it, or bundling it into a paid
+      product or service.
+   d. Running a copy on a server to make it available to others as a service, whether
+      free of charge or for a fee.
+   e. Creating derivative works from it, or using its name, visual identity or texts in
+      another project.
+   f. Removing or altering copyright notices, the owner's name, or this license.
+
+4. What is permitted
+   a. The project owner, and anyone to whom the owner grants express written
+      permission, within the limits of that permission.
+   b. Visitors to the website as officially published by the owner may play on it free
+      of charge in a web browser. This is use of a service, not a license to the source
+      code or assets.
+   c. Personal, non-commercial reading of files that the owner has handed to them,
+      without copying or distributing them beyond what section 3 allows.
+
+5. Requesting permission
+   Written permission must be requested from the project owner directly. This document
+   deliberately includes no contact details; refer to the project owner for any request.
+
+6. Disclaimer
+   The Project is provided "as is", without warranty of any kind, express or implied,
+   including fitness for a particular purpose or freedom from errors. To the extent
+   permitted by applicable law, the owner is not liable for any damage arising from the
+   use of, or inability to use, the Project.
+
+7. Third-party components
+   The Project uses open-source software libraries that belong to their authors and are
+   governed by their own licenses (for example React, ws and zod). This license does
+   not change the terms of those libraries or transfer their ownership. They are listed
+   in OWNERSHIP.md, and their license texts are bundled in
+   dist/public/third-party-licenses.txt after running the build command. The card game
+   Tarneeb itself is a traditional game whose rules are owned by no one; this license
+   covers the specific implementation, design and texts of the Project, not the rules of
+   the game.
+
+8. Language
+   This license is written in Arabic and English. If the two differ in meaning, the
+   Arabic text prevails.
