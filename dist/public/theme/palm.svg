@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-26 24 232 196" fill="none" stroke-linejoin="round" stroke-linecap="round">
+  <title>نخلة</title>
+  <defs>
+    <path id="f" d="M0 0 C26 -42 76 -48 112 -2 C76 -28 38 -22 0 0 Z"/>
+    <path id="rib" d="M6 -4 C40 -26 76 -26 104 -4" stroke-width="2.5"/>
+  </defs>
+  <!-- الجذع -->
+  <path d="M68 214 C76 176 74 136 83 100 L96 100 C93 138 100 176 107 214 Z" fill="#e3b95c" stroke="#0b0b0c" stroke-width="4"/>
+  <g stroke="#0b0b0c" stroke-width="3">
+    <path d="M71 196 q18 8 34 0"/>
+    <path d="M73 177 q17 8 32 0"/>
+    <path d="M75 158 q16 8 30 0"/>
+    <path d="M77 139 q15 8 28 0"/>
+    <path d="M79 120 q14 8 26 0"/>
+  </g>
+  <!-- السعف -->
+  <g transform="translate(90 98)" fill="#2fbf6d" stroke="#0b0b0c" stroke-width="4">
+    <g transform="scale(-1 1) rotate(46) scale(.9)"><use href="#f"/><use href="#rib"/></g>
+    <g transform="rotate(46) scale(.9)"><use href="#f"/><use href="#rib"/></g>
+    <g transform="scale(-1 1) rotate(14)"><use href="#f"/><use href="#rib"/></g>
+    <g transform="rotate(14)"><use href="#f"/><use href="#rib"/></g>
+    <g transform="scale(-1 1) rotate(-24) scale(.88)"><use href="#f"/><use href="#rib"/></g>
+    <g transform="rotate(-24) scale(.88)"><use href="#f"/><use href="#rib"/></g>
+    <g transform="scale(-1 1) rotate(-58) scale(.7)"><use href="#f"/><use href="#rib"/></g>
+    <g transform="rotate(-58) scale(.7)"><use href="#f"/><use href="#rib"/></g>
+    <g transform="rotate(-90) scale(.5)"><use href="#f"/></g>
+  </g>
+  <!-- عذق التمر -->
+  <g fill="#d96a2b" stroke="#0b0b0c" stroke-width="3">
+    <circle cx="84" cy="106" r="5.5"/><circle cx="96" cy="108" r="5.5"/><circle cx="90" cy="115" r="5.5"/>
+  </g>
+</svg>

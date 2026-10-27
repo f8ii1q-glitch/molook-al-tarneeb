@@ -9,5 +9,17 @@
     /* التخزين غير متاح (وضع خاص مثلًا): نبقى على اللغة الافتراضية */
   }
   root.setAttribute('lang', lang);
+  // المظهر المحفوظ (الراية/تراثي/ليل) يُطبَّق هنا أيضًا كي لا يومض المظهر الافتراضي قبل تحميل التطبيق.
+  var themeColors = { flag: '#0D0D0E', heritage: '#0A1510', night: '#070B16' };
+  var theme = 'flag';
+  try {
+    var savedTheme = window.localStorage.getItem('molook.theme');
+    if (savedTheme === 'heritage' || savedTheme === 'night') theme = savedTheme;
+  } catch (e) {
+    /* التخزين غير متاح */
+  }
+  root.setAttribute('data-theme', theme);
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', themeColors[theme]);
   root.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
 })();

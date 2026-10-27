@@ -13,12 +13,12 @@
  */
 'use strict';
 
-const VERSION = '5153b0e4ab7c';
+const VERSION = '6e1076cc0f92';
 const CACHE = 'molook-' + VERSION;
 const PRECACHE = [
   "/apple-touch-icon.png",
-  "/assets/main-PISUWTQV.js",
-  "/assets/main-VJQHQXFL.css",
+  "/assets/main-2Z55DZIL.css",
+  "/assets/main-QZYSNFBS.js",
   "/boot.js",
   "/characters/brown-front.webp",
   "/characters/brown-three.webp",
@@ -35,7 +35,9 @@ const PRECACHE = [
   "/icons/icon-maskable-512.png",
   "/index.html",
   "/manifest.webmanifest",
-  "/pattern-suits.svg"
+  "/pattern-suits.svg",
+  "/theme/palm.svg",
+  "/theme/swords.svg"
 ];
 const PAGES = ['/', '/play'];
 const NAVIGATION_TIMEOUT_MS = 4000;

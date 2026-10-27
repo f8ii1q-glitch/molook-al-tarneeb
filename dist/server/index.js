@@ -8540,6 +8540,7 @@ var clientMessageSchema = external_exports.discriminatedUnion("t", [
   external_exports.object({ t: external_exports.literal("leave") }).strict(),
   external_exports.object({ t: external_exports.literal("close") }).strict(),
   external_exports.object({ t: external_exports.literal("react"), emoji: external_exports.string().max(16) }).strict(),
+  external_exports.object({ t: external_exports.literal("say"), phrase: external_exports.string().max(16) }).strict(),
   external_exports.object({ t: external_exports.literal("ping") }).strict()
 ]);
 
@@ -8630,6 +8631,11 @@ function isReaction(value) {
   return typeof value === "string" && REACTIONS.includes(value);
 }
 var REACTION_COOLDOWN_MS = 700;
+var PHRASES = ["nice", "hurry", "think", "lucky", "mine", "gg", "next", "partner", "thanks", "oops"];
+function isPhrase(value) {
+  return typeof value === "string" && PHRASES.includes(value);
+}
+var PHRASE_COOLDOWN_MS = 1500;
 
 // server/security/tokens.ts
 import { createHash, randomBytes, randomInt as randomInt2, timingSafeEqual } from "node:crypto";
@@ -9011,6 +9017,8 @@ var RoomManager = class {
         return this.onCloseRoom(st);
       case "react":
         return this.onReact(st, msg.emoji);
+      case "say":
+        return this.onSay(st, msg.phrase);
     }
   }
   // ───────────────────────── الإنشاء والانضمام والعودة ─────────────────────────
@@ -9096,6 +9104,16 @@ var RoomManager = class {
     if (now - st.lastReactionAt < REACTION_COOLDOWN_MS) return;
     st.lastReactionAt = now;
     this.broadcastEvents(bound.live, [{ type: "reaction", seat: bound.seat, emoji }]);
+  }
+  /** عبارة جاهزة: كالإيموجي تمامًا (قائمة ثابتة، فاصل أدنى، لا تُحفظ)، ويشترك الاثنان في مؤقت واحد لكل لاعب. */
+  onSay(st, phrase) {
+    const bound = this.bound(st);
+    if (!bound) return this.fail(st, "not_in_room");
+    if (!isPhrase(phrase)) return this.fail(st, "bad_message");
+    const now = this.clock.now();
+    if (now - st.lastReactionAt < PHRASE_COOLDOWN_MS) return;
+    st.lastReactionAt = now;
+    this.broadcastEvents(bound.live, [{ type: "say", seat: bound.seat, phrase }]);
   }
   broadcastEvents(live, events) {
     const room = live.data;
