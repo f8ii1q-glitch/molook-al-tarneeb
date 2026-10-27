@@ -13,12 +13,12 @@
  */
 'use strict';
 
-const VERSION = '32f04753b3f3';
+const VERSION = '5153b0e4ab7c';
 const CACHE = 'molook-' + VERSION;
 const PRECACHE = [
   "/apple-touch-icon.png",
-  "/assets/main-25Z6JWNG.css",
-  "/assets/main-ZDVCLPOQ.js",
+  "/assets/main-PISUWTQV.js",
+  "/assets/main-VJQHQXFL.css",
   "/boot.js",
   "/characters/brown-front.webp",
   "/characters/brown-three.webp",
