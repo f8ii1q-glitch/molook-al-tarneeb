@@ -3746,6 +3746,7 @@ function loadConfig(env = process.env) {
     trustProxy: env.TRUST_PROXY === "1" || env.TRUST_PROXY === "true",
     trickPauseMs: readInt(env, "TRICK_PAUSE_MS", 1600, 0, 1e4),
     roundEndDelayMs: readInt(env, "ROUND_END_DELAY_MS", 2e4, 1e3, 3e5),
+    turnTimeoutMs: readInt(env, "TURN_TIMEOUT_MS", 45e3, 0, 6e5),
     lobbySeatGraceMs: readInt(env, "LOBBY_SEAT_GRACE_MS", 9e4, 1e3, 36e5),
     roomAbandonMs: readInt(env, "ROOM_ABANDON_MS", 20 * 6e4, 1e4, 864e5),
     roomIdleTtlMs: readInt(env, "ROOM_IDLE_TTL_MS", 3 * 36e5, 6e4, 7 * 864e5),
@@ -4239,6 +4240,9 @@ function isSeat(value) {
 function nextSeat(seat) {
   return (seat + 1) % SEAT_COUNT;
 }
+function partnerOf(seat) {
+  return (seat + 2) % SEAT_COUNT;
+}
 function teamOf(seat) {
   return seat % 2;
 }
@@ -4476,6 +4480,212 @@ function startNextRound(state, rng) {
   const dealer = nextSeat(state.dealer);
   beginRound(next, dealer, state.round + 1, rng);
   return { ok: true, state: next, events: [{ type: "dealt", round: next.round, dealer }] };
+}
+
+// engine/bot.ts
+var PARTNER_SHARE = 3.2;
+var strength = (card) => rankStrength(rankOf(card));
+function bySuit(hand, suit) {
+  return hand.filter((card) => suitOf(card) === suit).sort((a, b) => strength(b) - strength(a));
+}
+function estimateTricks(hand, trump) {
+  const trumps = bySuit(hand, trump);
+  const length = trumps.length;
+  const has = (cards, rank) => cards.some((card) => rankOf(card) === rank);
+  let estimate = 0;
+  if (has(trumps, "A")) estimate += 1;
+  if (has(trumps, "K")) estimate += length >= 2 ? 0.85 : 0.3;
+  if (has(trumps, "Q")) estimate += length >= 3 ? has(trumps, "A") || has(trumps, "K") ? 0.6 : 0.35 : 0.1;
+  if (has(trumps, "J")) estimate += length >= 4 ? 0.35 : 0;
+  if (has(trumps, "10")) estimate += length >= 5 ? 0.2 : 0;
+  estimate += Math.max(0, length - 4) * 0.7;
+  for (const suit of SUITS) {
+    if (suit === trump) continue;
+    const cards = bySuit(hand, suit);
+    if (cards.length === 0) {
+      if (length >= 3) estimate += 1;
+      continue;
+    }
+    if (has(cards, "A")) {
+      estimate += 0.85;
+      if (has(cards, "K")) estimate += 0.7;
+    } else if (has(cards, "K") && cards.length >= 2) {
+      estimate += 0.35;
+    }
+    if (cards.length === 1 && length >= 3 && !has(cards, "A")) estimate += 0.5;
+  }
+  return estimate;
+}
+function bestTrump(hand) {
+  let best = null;
+  for (const suit of SUITS) {
+    const estimate = estimateTricks(hand, suit);
+    const length = bySuit(hand, suit).length;
+    if (best === null || estimate > best.estimate + 1e-9 || Math.abs(estimate - best.estimate) <= 1e-9 && length > best.length) {
+      best = { suit, estimate, length };
+    }
+  }
+  const chosen = best;
+  return { suit: chosen.suit, estimate: chosen.estimate };
+}
+function decideBid(view, seat, partnerShare) {
+  const lowest = Math.max(MIN_BID, view.highBid + 1);
+  const { estimate } = bestTrump(view.hand);
+  const maxBid = Math.min(MAX_BID, Math.floor(estimate + partnerShare));
+  if (view.mustBid) {
+    return { kind: "bid", value: Math.max(MIN_BID, maxBid) };
+  }
+  if (lowest > MAX_BID) return { kind: "pass" };
+  const partnerLeads = view.highBidder === partnerOf(seat);
+  const needed = partnerLeads ? lowest + 1 : lowest;
+  if (maxBid >= needed) return { kind: "bid", value: Math.max(lowest, maxBid) };
+  return { kind: "pass" };
+}
+function cost(card, trump) {
+  return (suitOf(card) === trump ? 100 : 0) + strength(card);
+}
+function cheapest(cards, trump) {
+  return [...cards].sort((a, b) => cost(a, trump) - cost(b, trump))[0];
+}
+function beats2(challenger, current, trump) {
+  if (suitOf(challenger) === suitOf(current)) return strength(challenger) > strength(current);
+  return suitOf(challenger) === trump;
+}
+var RANK_ORDER = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
+var ALL_BY_SUIT = {
+  S: RANK_ORDER.map((rank) => `S${rank}`),
+  H: RANK_ORDER.map((rank) => `H${rank}`),
+  D: RANK_ORDER.map((rank) => `D${rank}`),
+  C: RANK_ORDER.map((rank) => `C${rank}`)
+};
+function isBoss(card, known) {
+  const mine = strength(card);
+  for (const other of ALL_BY_SUIT[suitOf(card)]) {
+    if (strength(other) > mine && !known.has(other)) return false;
+  }
+  return true;
+}
+function decideLead(view, seat, trump, known) {
+  const hand = view.hand;
+  const contract = view.contract;
+  const declarerTeam = contract !== null && teamOf(contract.bidder) === teamOf(seat);
+  const trumps = bySuit(hand, trump);
+  const trumpsOut = ALL_BY_SUIT[trump].filter((card) => !known.has(card)).length;
+  const bossTrump = trumps.find((card) => isBoss(card, known));
+  if (declarerTeam && bossTrump && trumpsOut > 0) return bossTrump;
+  const sideBoss = hand.filter((card) => suitOf(card) !== trump && isBoss(card, known)).sort((a, b) => strength(b) - strength(a));
+  if (sideBoss.length > 0) return sideBoss[0];
+  if (contract !== null && contract.bidder === seat && trumps.length >= 4 && trumpsOut > 0) return trumps[0];
+  const sideSuits = SUITS.filter((suit) => suit !== trump).map((suit) => ({ suit, cards: bySuit(hand, suit) })).filter((entry) => entry.cards.length > 0).sort((a, b) => b.cards.length - a.cards.length || strength(b.cards[0]) - strength(a.cards[0]));
+  if (sideSuits.length > 0) {
+    const longest = sideSuits[0];
+    return longest.cards[longest.cards.length - 1];
+  }
+  return trumps[trumps.length - 1];
+}
+function decideFollow(view, seat, trump, known) {
+  const trick = view.trick;
+  const plays = trick?.plays ?? [];
+  const legal = view.legal;
+  const leadSuit = suitOf(plays[0].card);
+  const winnerSeat = trickWinner({ leader: trick.leader, plays, winner: null }, trump);
+  const winningCard = plays.find((play) => play.seat === winnerSeat).card;
+  const partnerWinning = winnerSeat === partnerOf(seat);
+  const last = plays.length === 3;
+  const following = legal.every((card) => suitOf(card) === leadSuit);
+  if (following) {
+    if (partnerWinning) {
+      return cheapest(legal, trump);
+    }
+    const winners = legal.filter((card) => beats2(card, winningCard, trump));
+    if (winners.length === 0) return cheapest(legal, trump);
+    if (last) return cheapest(winners, trump);
+    const boss = winners.filter((card) => isBoss(card, known));
+    if (boss.length > 0) return cheapest(boss, trump);
+    const highest = [...winners].sort((a, b) => strength(b) - strength(a))[0];
+    return strength(highest) >= 10 ? highest : cheapest(winners, trump);
+  }
+  if (!partnerWinning) {
+    const ruffs = legal.filter((card) => suitOf(card) === trump && beats2(card, winningCard, trump));
+    if (ruffs.length > 0) return cheapest(ruffs, trump);
+  }
+  const discards = legal.filter((card) => suitOf(card) !== trump);
+  return cheapest(discards.length > 0 ? discards : legal, trump);
+}
+function chooseBotAction(view, seat, ctx) {
+  if (view.turn !== seat) return null;
+  const slip = () => (ctx.mistakeRate ?? 0) > 0 && ctx.rng.int(1e3) < Math.round(ctx.mistakeRate * 1e3);
+  switch (view.phase) {
+    case "bidding": {
+      if (!slip()) return decideBid(view, seat, ctx.partnerShare ?? PARTNER_SHARE);
+      const lowest = Math.max(MIN_BID, view.highBid + 1);
+      const options = [];
+      if (!view.mustBid) options.push({ kind: "pass" });
+      for (let value = lowest; value <= MAX_BID; value++) options.push({ kind: "bid", value });
+      return options[ctx.rng.int(options.length)] ?? { kind: "pass" };
+    }
+    case "trump":
+      return { kind: "trump", suit: slip() ? SUITS[ctx.rng.int(SUITS.length)] : bestTrump(view.hand).suit };
+    case "playing": {
+      const trump = view.contract?.trump;
+      if (!trump || view.legal.length === 0 || view.trick?.complete) return null;
+      if (slip()) return { kind: "play", card: view.legal[ctx.rng.int(view.legal.length)] };
+      const known = /* @__PURE__ */ new Set([...ctx.played, ...view.hand]);
+      const plays = view.trick?.plays ?? [];
+      const card = plays.length === 0 ? decideLead(view, seat, trump, known) : decideFollow(view, seat, trump, known);
+      return { kind: "play", card: view.legal.includes(card) ? card : view.legal[ctx.rng.int(view.legal.length)] };
+    }
+    default:
+      return null;
+  }
+}
+
+// engine/view.ts
+function viewTrick(trick, complete, trump) {
+  if (!trick) return null;
+  const winner = complete && trump ? trickWinner(trick, trump) : trick.winner;
+  return {
+    leader: trick.leader,
+    plays: trick.plays.map((play) => ({ seat: play.seat, card: play.card })),
+    complete,
+    winner
+  };
+}
+function projectGame(state, seat) {
+  return {
+    phase: state.phase,
+    round: state.round,
+    dealer: state.dealer,
+    turn: state.turn,
+    targetScore: state.config.targetScore,
+    hand: [...state.hands[seat] ?? []],
+    handCounts: state.hands.map((hand) => hand.length),
+    legal: legalCards(state, seat),
+    bids: [...state.bids],
+    highBid: state.highBid,
+    highBidder: state.highBidder,
+    mustBid: isForcedBid(state, seat),
+    contract: state.contract ? { ...state.contract } : null,
+    trick: viewTrick(state.trick, isTrickComplete(state), state.contract?.trump),
+    lastTrick: viewTrick(state.lastTrick, false, state.contract?.trump),
+    tricksWon: [state.tricksWon[0], state.tricksWon[1]],
+    trickCount: state.trickCount,
+    scores: [state.scores[0], state.scores[1]],
+    history: state.history.map((round) => structuredClone(round)),
+    winner: state.winner
+  };
+}
+
+// shared/characters.ts
+var CHARACTER_IDS = ["falcon", "wolf", "lion", "shaheen", "tiger", "cheetah", "general", "zaeem", "thunder", "raptor"];
+var DEFAULT_CHARACTER = "falcon";
+function isCharacterId(value) {
+  return typeof value === "string" && CHARACTER_IDS.includes(value);
+}
+function pickFreeCharacter(taken, preferred) {
+  const used = new Set(taken);
+  if (preferred && !used.has(preferred)) return preferred;
+  return CHARACTER_IDS.find((id) => !used.has(id)) ?? DEFAULT_CHARACTER;
 }
 
 // ../../../opt/npm-tools/node_modules/zod/v3/external.js
@@ -8524,11 +8734,12 @@ var code = external_exports.string().max(32);
 var name = external_exports.string().max(120);
 var finiteNumber = external_exports.number().finite();
 var clientMessageSchema = external_exports.discriminatedUnion("t", [
-  external_exports.object({ t: external_exports.literal("create"), name, targetScore: finiteNumber.optional(), hall: external_exports.boolean().optional() }).strict(),
-  external_exports.object({ t: external_exports.literal("join"), code, name, hall: external_exports.boolean().optional() }).strict(),
+  external_exports.object({ t: external_exports.literal("create"), name, targetScore: finiteNumber.optional(), hall: external_exports.boolean().optional(), character: external_exports.string().max(24).optional() }).strict(),
+  external_exports.object({ t: external_exports.literal("join"), code, name, hall: external_exports.boolean().optional(), character: external_exports.string().max(24).optional() }).strict(),
   external_exports.object({ t: external_exports.literal("resume"), code, token: external_exports.string().min(1).max(128) }).strict(),
   external_exports.object({ t: external_exports.literal("sit"), seat: finiteNumber }).strict(),
   external_exports.object({ t: external_exports.literal("ready"), ready: external_exports.boolean() }).strict(),
+  external_exports.object({ t: external_exports.literal("character"), id: external_exports.string().max(24) }).strict(),
   external_exports.object({ t: external_exports.literal("settings"), targetScore: finiteNumber }).strict(),
   external_exports.object({ t: external_exports.literal("start") }).strict(),
   external_exports.object({ t: external_exports.literal("bid"), value: finiteNumber }).strict(),
@@ -8559,13 +8770,13 @@ var TokenBucket = class {
     this.last = now();
   }
   /** يحاول أخذ `cost` من الرصيد؛ يرجع false إن لم يتوفر. */
-  take(cost = 1) {
+  take(cost2 = 1) {
     const current = this.now();
     const elapsedSeconds = Math.max(0, (current - this.last) / 1e3);
     this.last = current;
     this.tokens = Math.min(this.capacity, this.tokens + elapsedSeconds * this.refillPerSecond);
-    if (this.tokens < cost) return false;
-    this.tokens -= cost;
+    if (this.tokens < cost2) return false;
+    this.tokens -= cost2;
     return true;
   }
 };
@@ -8739,42 +8950,6 @@ function isGameState(value) {
   return true;
 }
 
-// engine/view.ts
-function viewTrick(trick, complete, trump) {
-  if (!trick) return null;
-  const winner = complete && trump ? trickWinner(trick, trump) : trick.winner;
-  return {
-    leader: trick.leader,
-    plays: trick.plays.map((play) => ({ seat: play.seat, card: play.card })),
-    complete,
-    winner
-  };
-}
-function projectGame(state, seat) {
-  return {
-    phase: state.phase,
-    round: state.round,
-    dealer: state.dealer,
-    turn: state.turn,
-    targetScore: state.config.targetScore,
-    hand: [...state.hands[seat] ?? []],
-    handCounts: state.hands.map((hand) => hand.length),
-    legal: legalCards(state, seat),
-    bids: [...state.bids],
-    highBid: state.highBid,
-    highBidder: state.highBidder,
-    mustBid: isForcedBid(state, seat),
-    contract: state.contract ? { ...state.contract } : null,
-    trick: viewTrick(state.trick, isTrickComplete(state), state.contract?.trump),
-    lastTrick: viewTrick(state.lastTrick, false, state.contract?.trump),
-    tricksWon: [state.tricksWon[0], state.tricksWon[1]],
-    trickCount: state.trickCount,
-    scores: [state.scores[0], state.scores[1]],
-    history: state.history.map((round) => structuredClone(round)),
-    winner: state.winner
-  };
-}
-
 // server/rooms/room.ts
 function roomStatus(room) {
   return room.game ? "game" : "lobby";
@@ -8788,6 +8963,7 @@ function buildRoomView(room, seat, now) {
     return {
       seat: index,
       name: record ? record.name : null,
+      character: record ? record.character : null,
       connected: record ? record.connected : false,
       ready: record ? record.ready : false
     };
@@ -8802,6 +8978,7 @@ function buildRoomView(room, seat, now) {
     rematchVotes: [...room.rematchVotes],
     roundAcks: [...room.roundAcks],
     roundEndsInMs: room.roundEndsAt === null ? null : Math.max(0, room.roundEndsAt - now),
+    turnEndsInMs: room.turnEndsAt === null ? null : Math.max(0, room.turnEndsAt - now),
     game: room.game ? projectGame(room.game, seat) : null
   };
 }
@@ -8833,11 +9010,15 @@ function parseRoomSnapshot(json) {
   if (!Array.isArray(raw.roundAcks) || !raw.roundAcks.every(isSeat)) return null;
   if (raw.roundEndsAt !== null && typeof raw.roundEndsAt !== "number") return null;
   const seats = [];
+  const takenCharacters = [];
   for (const entry of raw.seats) {
     if (entry === null) seats.push(null);
     else if (isSeatRecord(entry)) {
+      const character = pickFreeCharacter(takenCharacters, isCharacterId(entry.character) ? entry.character : null);
+      takenCharacters.push(character);
       seats.push({
         name: entry.name,
+        character,
         tokenHash: entry.tokenHash,
         ready: entry.ready,
         connected: false,
@@ -8863,7 +9044,9 @@ function parseRoomSnapshot(json) {
     game,
     rematchVotes: [...raw.rematchVotes],
     roundAcks: [...raw.roundAcks],
-    roundEndsAt: raw.roundEndsAt
+    roundEndsAt: raw.roundEndsAt,
+    // المؤقت الحي لا يُستعاد؛ يعيد المدير ضبطه من حالة المباراة.
+    turnEndsAt: null
   };
 }
 
@@ -8878,6 +9061,8 @@ var DEFAULT_LIMITS = {
   joinWindowMs: 6e4,
   violationsBeforeKick: 40
 };
+var DISCONNECTED_TURN_MS = 8e3;
+var RETURN_GRACE_MS = 15e3;
 var noopLogger = { info: () => {
 }, warn: () => {
 } };
@@ -8995,6 +9180,8 @@ var RoomManager = class {
         return this.onSit(st, msg.seat);
       case "ready":
         return this.onReady(st, msg.ready);
+      case "character":
+        return this.onCharacter(st, msg.id);
       case "settings":
         return this.onSettings(st, msg.targetScore);
       case "start":
@@ -9039,12 +9226,13 @@ var RoomManager = class {
       updatedAt: now,
       version: 0,
       hostSeat: 0,
-      seats: [this.newSeatRecord(name2, token), null, null, null],
+      seats: [this.newSeatRecord(name2, token, pickFreeCharacter([], isCharacterId(msg.character) ? msg.character : null)), null, null, null],
       settings: { targetScore },
       game: null,
       rematchVotes: [],
       roundAcks: [],
-      roundEndsAt: null
+      roundEndsAt: null,
+      turnEndsAt: null
     };
     const live = this.registerRoom(room);
     this.bind(st, live, 0);
@@ -9077,7 +9265,8 @@ var RoomManager = class {
       return this.fail(st, "name_taken");
     }
     const token = newSessionToken();
-    room.seats[freeSeat] = this.newSeatRecord(name2, token);
+    const taken = room.seats.flatMap((record) => record ? [record.character] : []);
+    room.seats[freeSeat] = this.newSeatRecord(name2, token, pickFreeCharacter(taken, isCharacterId(msg.character) ? msg.character : null));
     this.bind(st, live, freeSeat);
     st.conn.send({ t: "session", code: code2, seat: freeSeat, token });
     this.commit(live, [{ type: "joined", seat: freeSeat }]);
@@ -9162,6 +9351,7 @@ var RoomManager = class {
     record.disconnectedAt = null;
     this.cancelGrace(live, seat);
     this.bind(st, live, seat);
+    this.syncTurnTimer(live, seat);
     this.commit(live, [{ type: "reconnected", seat }]);
   }
   // ───────────────────────── الصالة قبل المباراة ─────────────────────────
@@ -9189,6 +9379,21 @@ var RoomManager = class {
     const room = bound.live.data;
     if (room.game) return this.fail(st, "not_lobby");
     room.seats[bound.seat].ready = ready;
+    this.commit(bound.live, []);
+  }
+  /** تغيير الشخصية في الصالة؛ لا تُقبل شخصية يحملها لاعب آخر على الطاولة. */
+  onCharacter(st, id) {
+    const bound = this.bound(st);
+    if (!bound) return this.fail(st, "not_in_room");
+    const room = bound.live.data;
+    if (room.game) return this.fail(st, "not_lobby");
+    if (!isCharacterId(id)) return this.fail(st, "bad_message");
+    if (room.seats.some((record2, index) => record2 !== null && index !== bound.seat && record2.character === id)) {
+      return this.fail(st, "character_taken");
+    }
+    const record = room.seats[bound.seat];
+    if (record.character === id) return;
+    record.character = id;
     this.commit(bound.live, []);
   }
   onSettings(st, targetScore) {
@@ -9326,6 +9531,83 @@ var RoomManager = class {
       room.roundEndsAt = null;
       room.roundAcks = [];
     }
+    this.syncTurnTimer(live);
+  }
+  // ───────────────────────── مهلة الدور ─────────────────────────
+  /**
+   * مفتاح الدور الحالي: يتغير مع كل حركة، فيعرف المدير أن المؤقت القديم لم يعد يخص هذا الدور.
+   * null = لا دور يستحق مؤقتًا (لا مباراة، أو فاصل أكلة/جولة/نهاية).
+   */
+  turnKeyOf(game) {
+    if (!game || game.turn === null) return null;
+    if (game.phase !== "bidding" && game.phase !== "trump" && game.phase !== "playing") return null;
+    if (isTrickComplete(game)) return null;
+    return `${game.round}:${game.phase}:${game.turn}:${game.bidActions}:${game.trick?.plays.length ?? 0}:${game.trickCount}`;
+  }
+  /**
+   * يضبط مؤقت صاحب الدور: يبدأ عند بدء كل دور، ولا يُعاد ضبطه ما دام الدور نفسه (فلا تطول المهلة بإعادة المزامنة).
+   * لا يعمل إن لم يبقَ أي لاعب متصل (الغرفة المستعادة بعد إعادة التشغيل تنتظر عودة أصحابها ولا يلعب عنهم أحد).
+   * ومن انقطع اتصاله والبقية حاضرون تقصر مهلته إلى DISCONNECTED_TURN_MS، وإن عاد وكان دوره يُمنح RETURN_GRACE_MS على الأقل.
+   */
+  syncTurnTimer(live, returning) {
+    const room = live.data;
+    const timeout = this.opts.turnTimeoutMs ?? 0;
+    const key = timeout > 0 ? this.turnKeyOf(room.game) : null;
+    const anyoneHere = room.seats.some((record) => record?.connected);
+    if (key === null || !anyoneHere) {
+      live.turnTimer?.cancel();
+      live.turnTimer = null;
+      live.turnKey = null;
+      room.turnEndsAt = null;
+      return;
+    }
+    const game = room.game;
+    const now = this.clock.now();
+    const sameTurn = live.turnKey === key && live.turnTimer !== null && room.turnEndsAt !== null;
+    let endsAt = sameTurn ? room.turnEndsAt : now + timeout;
+    const holder = room.seats[game.turn];
+    if (holder && !holder.connected) endsAt = Math.min(endsAt, now + Math.min(timeout, DISCONNECTED_TURN_MS));
+    if (returning !== void 0 && returning === game.turn) endsAt = Math.max(endsAt, now + Math.min(timeout, RETURN_GRACE_MS));
+    if (sameTurn && endsAt === room.turnEndsAt) return;
+    live.turnTimer?.cancel();
+    live.turnKey = key;
+    room.turnEndsAt = endsAt;
+    live.turnTimer = this.clock.after(Math.max(0, endsAt - now), () => this.onTurnTimeout(live, key));
+  }
+  /** انتهت مهلة صاحب الدور: يلعب الخادم عنه حركة البوت المدروسة (والحركة تمرّ بالمحرك كأي حركة). */
+  onTurnTimeout(live, key) {
+    live.turnTimer = null;
+    const room = live.data;
+    const game = room.game;
+    if (!game || !this.rooms.has(room.code) || this.turnKeyOf(game) !== key || game.turn === null) return;
+    const seat = game.turn;
+    const action = chooseBotAction(projectGame(game, seat), seat, { played: this.playedCards(game), rng: this.rng });
+    const result = action ? this.applyBotAction(game, seat, action) : null;
+    if (!result || !result.ok) {
+      this.log.warn(`room ${room.code}: auto-play failed for seat ${seat}`);
+      live.turnKey = null;
+      this.syncTurnTimer(live);
+      return;
+    }
+    room.game = result.state;
+    this.afterGameChange(live, [{ type: "autoPlayed", seat }, ...result.events]);
+  }
+  applyBotAction(game, seat, action) {
+    switch (action.kind) {
+      case "bid":
+        return placeBid(game, seat, action.value);
+      case "pass":
+        return passBid(game, seat);
+      case "trump":
+        return chooseTrump(game, seat, action.suit);
+      case "play":
+        return playCard(game, seat, action.card);
+    }
+  }
+  /** كل الأوراق التي لُعبت في هذه الجولة: الرزمة كلها ناقص ما بقي في الأيدي (تشمل الأكلة الجارية). */
+  playedCards(game) {
+    const inHands = new Set(game.hands.flat());
+    return createDeck().filter((card) => !inHands.has(card));
   }
   onTrickTimer(live) {
     live.trickTimer = null;
@@ -9347,8 +9629,8 @@ var RoomManager = class {
     this.afterGameChange(live, [...result.events]);
   }
   // ───────────────────────── المقاعد والانقطاع ─────────────────────────
-  newSeatRecord(name2, token) {
-    return { name: name2, tokenHash: hashToken(token), ready: false, connected: true, disconnectedAt: null };
+  newSeatRecord(name2, token, character) {
+    return { name: name2, character, tokenHash: hashToken(token), ready: false, connected: true, disconnectedAt: null };
   }
   bind(st, live, seat) {
     st.roomCode = live.data.code;
@@ -9371,6 +9653,7 @@ var RoomManager = class {
     record.connected = false;
     record.disconnectedAt = this.clock.now();
     if (!live.data.game) this.scheduleGrace(live, seat);
+    else this.syncTurnTimer(live);
     this.commit(live, [{ type: "disconnected", seat }], false);
   }
   scheduleGrace(live, seat) {
@@ -9411,6 +9694,8 @@ var RoomManager = class {
       connIds: [null, null, null, null],
       trickTimer: null,
       roundEndTimer: null,
+      turnTimer: null,
+      turnKey: null,
       graceTimers: [null, null, null, null]
     };
     this.rooms.set(room.code, live);
@@ -9420,9 +9705,12 @@ var RoomManager = class {
   cancelAllTimers(live) {
     live.trickTimer?.cancel();
     live.roundEndTimer?.cancel();
+    live.turnTimer?.cancel();
     for (const timer of live.graceTimers) timer?.cancel();
     live.trickTimer = null;
     live.roundEndTimer = null;
+    live.turnTimer = null;
+    live.turnKey = null;
     live.graceTimers = [null, null, null, null];
   }
   closeRoom(live, reason) {
@@ -9548,6 +9836,7 @@ function createApp(options) {
     options: {
       trickPauseMs: config2.trickPauseMs,
       roundEndDelayMs: config2.roundEndDelayMs,
+      turnTimeoutMs: config2.turnTimeoutMs,
       lobbySeatGraceMs: config2.lobbySeatGraceMs,
       roomAbandonMs: config2.roomAbandonMs,
       roomIdleTtlMs: config2.roomIdleTtlMs,

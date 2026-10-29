@@ -9,12 +9,12 @@
     /* التخزين غير متاح (وضع خاص مثلًا): نبقى على اللغة الافتراضية */
   }
   root.setAttribute('lang', lang);
-  // المظهر المحفوظ (الراية/تراثي/ليل) يُطبَّق هنا أيضًا كي لا يومض المظهر الافتراضي قبل تحميل التطبيق.
-  var themeColors = { flag: '#0D0D0E', heritage: '#0A1510', night: '#070B16' };
-  var theme = 'flag';
+  // المظهر المحفوظ (الديوان/تراثي/ليل/الراية) يُطبَّق هنا أيضًا كي لا يومض المظهر الافتراضي قبل تحميل التطبيق.
+  var themeColors = { majlis: '#06241C', heritage: '#1C130B', night: '#070B16', flag: '#0D0D0E' };
+  var theme = 'majlis';
   try {
     var savedTheme = window.localStorage.getItem('molook.theme');
-    if (savedTheme === 'heritage' || savedTheme === 'night') theme = savedTheme;
+    if (savedTheme === 'heritage' || savedTheme === 'night' || savedTheme === 'flag') theme = savedTheme;
   } catch (e) {
     /* التخزين غير متاح */
   }

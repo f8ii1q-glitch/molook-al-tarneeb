@@ -1,8 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#FF3131"/>
-  <path d="M10 46 L8 22 L22 33 L32 14 L42 33 L56 22 L54 46 Z" fill="#0B0B0C"/>
-  <rect x="10" y="46" width="44" height="6" rx="2" fill="#FFC72C"/>
-  <circle cx="32" cy="14" r="3.2" fill="#FFC72C"/>
-  <circle cx="8" cy="22" r="2.8" fill="#FFC72C"/>
-  <circle cx="56" cy="22" r="2.8" fill="#FFC72C"/>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0F4535"/><stop offset="1" stop-color="#06241C"/></linearGradient>
+    <linearGradient id="au" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F6D27A"/><stop offset="1" stop-color="#D9A02C"/></linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <path d="M15 55V29C15 15 23 7 32 7s17 8 17 22v26z" fill="#04140F" stroke="#E8B339" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M19.500 55V29c0-11 5.600-17.500 12.500-17.500S44.500 18 44.500 29v26" fill="none" stroke="#E8B339" stroke-opacity=".38" stroke-width="1"/>
+  <g transform="translate(32 37) scale(.84) translate(-32 -37)">
+    <path d="M21 46 19.500 29 26.500 35 32 22.500 37.500 35 44.500 29 43 46z" fill="url(#au)" stroke="#9B6B12" stroke-width="1.100" stroke-linejoin="round"/>
+    <rect x="21" y="46" width="22" height="5" rx="1.600" fill="url(#au)" stroke="#9B6B12" stroke-width="1.100"/>
+    <circle cx="32" cy="21" r="2.400" fill="#F6D27A"/>
+    <circle cx="19.500" cy="28" r="2.100" fill="#F6D27A"/>
+    <circle cx="44.500" cy="28" r="2.100" fill="#F6D27A"/>
+  </g>
+  <rect x="13.800" y="54.600" width="36.400" height="3.600" fill="#C8242B"/>
 </svg>

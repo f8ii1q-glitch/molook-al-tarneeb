@@ -13,12 +13,13 @@
  */
 'use strict';
 
-const VERSION = 'c4c6cebd5822';
+const VERSION = '64f1b591d7b8';
 const CACHE = 'molook-' + VERSION;
 const PRECACHE = [
   "/apple-touch-icon.png",
-  "/assets/main-3ZQL27US.js",
-  "/assets/main-LITJ5APA.css",
+  "/assets/fonts-a76d58ec.css",
+  "/assets/main-2W4WIPBN.js",
+  "/assets/main-3QFBO7EN.css",
   "/boot.js",
   "/characters/cheetah.webp",
   "/characters/falcon.webp",
@@ -32,6 +33,9 @@ const PRECACHE = [
   "/characters/zaeem.webp",
   "/favicon.svg",
   "/flag.webp",
+  "/fonts/ArefRuqaa-400.woff",
+  "/fonts/ArefRuqaa-700.woff",
+  "/fonts/ReadexPro-160-700.woff",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/icons/icon-maskable-512.png",
@@ -39,6 +43,8 @@ const PRECACHE = [
   "/manifest.webmanifest",
   "/pattern-suits.svg",
   "/theme/palm.svg",
+  "/theme/sadu-thin.svg",
+  "/theme/sadu.svg",
   "/theme/swords.svg"
 ];
 const PAGES = ['/', '/play'];
