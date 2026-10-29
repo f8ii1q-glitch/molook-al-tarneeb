@@ -14,7 +14,7 @@
 | الرخصة المفتوحة المصدر | لا توجد. لم تُضَف رخصة MIT أو Apache أو غيرهما إلى المشروع نفسه |
 | الإصدار | 1.0.0 |
 
-**الوصف:** موقع من صفحتين. الأولى «صفحة الأسطورة» الفكاهية عن صاحب المشروع بوصفه «أعظم لاعب طرنيب في التاريخ» (مزحة صريحة بلا أرقام أو إنجازات حقيقية). والثانية لعبة طرنيب بوضعين: أونلاين متعدد اللاعبين لحظيًا (أربعة لاعبين من أجهزة مختلفة، شراكات ثابتة جنوب/شمال ضد شرق/غرب، غرف برموز دعوة، والخادم هو الحَكَم الوحيد على الحالة)، و«العب وحدك» ضد الكمبيوتر داخل المتصفح بلا إنترنت بعشرة وجوه كرتونية (صور قدّمها صاحب المشروع) وأسماء مقاعد عشوائية وثلاثة مستويات وزر «اقترح لي». والشخصيات العشر يختارها كل لاعب أونلاين أيضًا (بلا تكرار على الطاولة)، وللدور مؤقت يلعب الخادم عند انتهائه حركة آلية. وللعبة أصوات مصنَّعة بالكود وأربعة مظاهر للطاولة (منها مظهر تراثي بسيفين ونخلة مرسومة في المشروع) بهوية بصرية «ليلة الديوان»، وبطاقة نتيجة تُرسم على جهاز اللاعب صورةً للمشاركة، وتلميح لتثبيت اللعبة على الشاشة الرئيسية ورتب وإحصائيات محلية و«تحدي اليوم» وعبارات جاهزة ومشاركة الدعوة. وفي الصفحتين «قائمة من لا يغلبون الملك» الفكاهية، وفي الطاولة إيموجيات تعبير. الواجهة عربية كاملة (RTL) مع ترجمة إنجليزية.
+**الوصف:** موقع من صفحتين. الأولى «صفحة الأسطورة» الفكاهية عن صاحب المشروع بوصفه «أعظم لاعب طرنيب في التاريخ» (مزحة صريحة بلا أرقام أو إنجازات حقيقية). والثانية لعبة طرنيب بوضعين: أونلاين متعدد اللاعبين لحظيًا (أربعة لاعبين من أجهزة مختلفة، شراكات ثابتة جنوب/شمال ضد شرق/غرب، غرف برموز دعوة، والخادم هو الحَكَم الوحيد على الحالة)، و«العب وحدك» ضد الكمبيوتر داخل المتصفح بلا إنترنت بعشرة وجوه كرتونية (صور قدّمها صاحب المشروع) وأسماء مقاعد عشوائية وثلاثة مستويات وزر «اقترح لي». والشخصيات العشر يختارها كل لاعب أونلاين أيضًا (بلا تكرار على الطاولة)، وللدور مؤقت يلعب الخادم عند انتهائه حركة آلية. وللعبة أصوات مصنَّعة بالكود وأربعة مظاهر للطاولة (منها مظهر تراثي بسيفين ونخلة مرسومة في المشروع) بهوية بصرية «ليلة الديوان»، وبطاقة نتيجة تُرسم على جهاز اللاعب صورةً للمشاركة، وتلميح لتثبيت اللعبة على الشاشة الرئيسية ورتب وإحصائيات محلية و«تحدي اليوم» وعبارات جاهزة ومشاركة الدعوة. وفي الطاولة إيموجيات تعبير. الواجهة عربية كاملة (RTL) مع ترجمة إنجليزية.
 
 ## 2. ما أُنشئ خصيصًا للمشروع (مملوك لصاحب المشروع)
 
@@ -30,13 +30,13 @@
 | `client/styles/` | الهوية البصرية «ليلة الديوان»: الألوان والأشكال والتخطيط والحركة وتصميم الأوراق والطاولة والمظاهر الأربعة (صُمّمت داخل المشروع) |
 | `client/components/Avatar.tsx` و`client/components/WavingFlag.tsx` و`client/solo/characters.ts` و`client/lib/randomNames.ts` | شيفرة عرض الشخصيات وحركة العلم ومعرّفات الشخصيات وقائمة الأسماء العشوائية (كُتبت للمشروع) |
 | `client/public/characters/*.webp` و`client/public/flag.webp` | **صور قدّمها صاحب المشروع** (عشر صور لشخصيات الكرتون، وصورة علم «ملوك الطرنيب»)؛ عملي عليها اقتصر على القص وتغيير المقاس والتحويل إلى WebP واستبدال الخلفية البيضاء لصورتين بتدرّج لوني مع إطار أبيض. **الصور العشر تُظهر وجوه أشخاص ويبدو أنها مبنية على صور أشخاص حقيقيين؛ مسؤولية الحصول على موافقتهم على ظهورها في موقع علني تقع على صاحب المشروع.** **لم أرسمها ولا أستطيع التحقق من مصدرها أو من حقوق استعمالها**؛ مسؤولية التأكد من أن له الحق في استعمالها تقع عليه. ولا تُحوَّل ملكيتها للمشروع بمجرد وجودها فيه |
-| `shared/hall.ts` و`shared/reactions.ts` | قائمة الأسماء الفكاهية وإيموجيات التعبير. **أسماء القائمة الأولى (13 اسمًا) قدّمها صاحب المشروع وهي أسماء أشخاص حقيقيين**؛ مسؤولية التأكد من رضاهم عن ظهور أسمائهم علنًا تقع عليه. الأسماء التي يسجلها اللاعبون تبقى لأصحابها ولا يملكها المشروع |
+| `shared/reactions.ts` | إيموجيات التعبير الثابتة (لا نص حر من اللاعبين). كانت «قائمة من لا يغلبون الملك» (أسماء أشخاص حقيقيين) في المشروع ثم أُزيلت بالكامل: لا أسماء مسجَّلة علنًا ولا جدول لها ولا مسار `/api/hall` |
 | `client/public/theme/sadu.svg` و`sadu-thin.svg` | شريطا السدو (نسيج مثلثات حمراء وعاجية على الأسود): **رُسما من الصفر بالشيفرة** على نمط الأنسجة التراثية العام، لا نقلًا عن تصميم محدد |
 | `client/lib/resultCard.ts` و`client/lib/install.ts` و`client/components/InstallHint.tsx` و`client/components/OwnerCredit.tsx` و`client/pages/play/AboutDialog.tsx` | بطاقة النتيجة (canvas) وتلميح التثبيت وعرض حقوق صاحب اللعبة وحسابه على X (كُتبت للمشروع) |
 | `client/public/theme/swords.svg` و`client/public/theme/palm.svg` و`client/styles/themes.css` | رسوم المظهر التراثي (سيفان ونخلة) ومتغيرات المظاهر: **رُسمت من الصفر بالشيفرة داخل المشروع** ورسمين منفصلين. **ليست الشعار الرسمي للمملكة العربية السعودية ولا نسخة منه ولا تقليدًا لتكوينه**؛ الشعار الرسمي علامة للدولة ولها أنظمة استخدام، ولا يملكها صاحب المشروع |
 | `client/lib/sound.ts` و`soundPlan.ts` | الأصوات **مصنَّعة بالكود** (WebAudio) فلا ملفات صوتية ولا عيّنات مأخوذة من أحد |
 | `client/components/Icons.tsx`، `client/public/*.svg`، `client/public/icons/`، `client/public/apple-touch-icon.png` | الأيقونات ورموز الأنواع والزخرفة وأيقونات التطبيق (PNG مولَّدة من الشعار: نافذة معقودة فيها التاج، مرسومة داخل المشروع): لا أيقونات مأخوذة من حزم خارجية |
-| `client/public/fonts/*.woff` | **ليست من إنشاء المشروع**: خطّا Aref Ruqaa وReadex Pro بترخيص SIL OFL 1.1 (انظر القسم 3 «الخطوط») |
+| `client/public/fonts/*.woff` | **ليست من إنشاء المشروع**: خط Cairo بترخيص SIL OFL 1.1 (انظر القسم 3 «الخطوط») |
 | `tests/` | اختبارات الوحدات والتكامل والواجهة الكاملة (e2e) ومساعداتها |
 | `scripts/`، `deploy/` | سكربتات البناء والتطوير وتوليد حزمة النشر، وقوالب النشر (Dockerfile وrender.yaml وشرح الخطوات) |
 | `README.md`، `LICENSE`، `OWNERSHIP.md`، `docs/`، `Dockerfile`، `.env.example` | التوثيق وملفات الإعداد |
@@ -74,18 +74,18 @@
 - **Node.js** (بيئة التشغيل، بترخيصها الخاص): يوفّر أيضًا الوحدتين `node:sqlite` و`node:crypto` اللتين يستخدمهما المشروع.
 - **Chromium** (يشغّله Playwright في الاختبارات فقط): لا يُوزَّع مع المشروع.
 
-### الخطوط
+### الخط
 
-الموقع يضم خطّين مضمَّنين بترخيص **SIL Open Font License 1.1**، وهما ملك لمصمميهم لا لصاحب المشروع:
+الموقع يضم خطًّا واحدًا مضمَّنًا بترخيص **SIL Open Font License 1.1**، وهو ملك لمصمميه لا لصاحب المشروع:
 
-| الخط | حقوق النشر | الدور | الملفات |
+| الخط | حقوق النشر | الدور | الملف |
 |---|---|---|---|
-| **Aref Ruqaa** (الأوزان 400 و700) | © 2015-2020 The Aref Ruqaa Project Authors (https://github.com/alif-type/aref-ruqaa) | خط الرقعة للأسماء والعناوين | `client/public/fonts/ArefRuqaa-400.woff` و`-700.woff` |
-| **Readex Pro** (وزن متغيّر 160–700) | © 2018 The Readex Pro Project Authors (https://github.com/ThomasJockin/readexpro) | خط الواجهة والنصوص | `client/public/fonts/ReadexPro-160-700.woff` |
+| **Cairo** (وزن متغيّر 300–900) | © 2009 The Cairo Project Authors (https://github.com/Gue3bara/Cairo) | خط الموقع كله: الواجهة والعناوين والأسماء وأرقام الأوراق وبطاقة النتيجة | `client/public/fonts/Cairo-300-900.woff` |
 
-- نصّا الرخصة كاملان في `client/public/fonts/OFL-ArefRuqaa.txt` و`OFL-ReadexPro.txt` ويُقدَّمان مع الموقع (الرخصة تشترط بقاءهما مع الخطوط).
-- الملفات المضمَّنة **نسخ مجزّأة (subset) من الخطين الأصليين**: أُبقيت الحروف العربية الشائعة واللاتينية والأرقام وعلامات الترقيم فقط، دون تغيير في رسم الحروف نفسها. أسماء العائلتين في CSS هي اسماهما الأصليان (`Aref Ruqaa` و`Readex Pro`). **ملاحظة صريحة:** تذكر رخصتا الخطين «اسم خط محجوزًا» (Reserved Font Name) هو EURM10 لـ Aref Ruqaa و«RevReading Lexend» لـ Readex Pro، ولا يُستعمل أي منهما اسمًا في الموقع؛ لكني لم أُجرِ فحصًا قانونيًا لمسألة «النسخة المعدّلة» عند التجزئة، ويُنصح بمراجعة مختص إن كان هذا مهمًا لك.
-- مصدر الملفين: مستودع Google Fonts على GitHub (`github.com/google/fonts`) عبر `git`، وجُزّئا بأداة fontTools.
+- نص الرخصة كاملًا في `client/public/fonts/OFL-Cairo.txt` ويُقدَّم مع الموقع (الرخصة تشترط بقاءه مع الخط).
+- الملف المضمَّن **نسخة مجزّأة (subset) من الخط الأصلي**: ثُبّت فيها ميل الحروف (slnt) على الاستقامة وحُدّد مدى الوزن بين 300 و900، وأُبقيت الحروف العربية واللاتينية والأرقام وعلامات الترقيم الشائعة فقط، دون تغيير في رسم الحروف نفسها. اسم العائلة في CSS هو اسمه الأصلي (`Cairo`). **ملاحظة صريحة:** ملف الرخصة يشرح مفهوم «Reserved Font Name» عمومًا ولا يحدد اسمًا محجوزًا بعينه في سطر حقوق النشر؛ ومع ذلك لم أُجرِ فحصًا قانونيًا لمسألة «النسخة المعدّلة» عند التجزئة وتثبيت المحاور، ويُنصح بمراجعة مختص إن كان هذا مهمًا لك.
+- مصدر الملف: مستودع Google Fonts على GitHub (`github.com/google/fonts`) عبر `git`، وجُزّئ بأداة fontTools.
+- الخطان السابقان (Aref Ruqaa وReadex Pro) أُزيلا من المشروع بالكامل مع نصّي رخصتيهما.
 
 ## 4. بيان بشأن الملكية القانونية
 
@@ -111,7 +111,7 @@
 |---|---|
 | Project name | **MOLOOK AL TARNEEB (ملوك الطرنيب)** |
 | Owner | **Abdullah bin Qunayfidh Al-Anazi** (the Latin spelling is a suggestion and may be changed) |
-| Description | A two-page website: a satirical "legend" page about the owner, and a Tarneeb card game with two modes: a real-time 4-player online game with a server-authoritative engine, and an offline-capable solo mode against three computer-controlled players shown as ten cartoon faces supplied by the owner (the seat names are drawn at random unless the player types a name) with three difficulty levels, a hint button and emoji reactions, running entirely in the browser. The game also has code-synthesized sounds (no audio files), four table themes (including a "heritage" theme with a pair of crossed swords and a palm tree drawn from scratch in this project — it is NOT the official Saudi emblem or a copy of its composition), local-only ranks and stats, a "daily challenge" with the same deal for everyone, fixed quick phrases, invite sharing, online character selection with a turn timer, a shareable result-card image drawn on the player's device, and an add-to-home-screen hint. The visual identity ("Diwan Night": palm green, gold, ivory, woven Sadu bands) was designed inside this project. A humorous "list of those who can't beat the King" (13 names supplied by the owner, which are real people's names, plus opt-in names registered by online players). Arabic (RTL) with a full English translation. |
+| Description | A two-page website: a satirical "legend" page about the owner, and a Tarneeb card game with two modes: a real-time 4-player online game with a server-authoritative engine, and an offline-capable solo mode against three computer-controlled players shown as ten cartoon faces supplied by the owner (the seat names are drawn at random unless the player types a name) with three difficulty levels, a hint button and emoji reactions, running entirely in the browser. The game also has code-synthesized sounds (no audio files), four table themes (including a "heritage" theme with a pair of crossed swords and a palm tree drawn from scratch in this project — it is NOT the official Saudi emblem or a copy of its composition), local-only ranks and stats, a "daily challenge" with the same deal for everyone, fixed quick phrases, invite sharing, online character selection with a turn timer, a shareable result-card image drawn on the player's device, and an add-to-home-screen hint. The visual identity ("Diwan Night": palm green, gold, ivory, woven Sadu bands) was designed inside this project. Arabic (RTL) with a full English translation. |
 | Owner's X account | [@qu503](https://x.com/qu503) (set in `shared/siteConfig.ts`; the only external link on the site) |
 | Created | 2026-10-26 |
 | License | Proprietary, all rights reserved; no redistribution or resale without the owner's written permission (see `LICENSE`). No open-source license was added. |
@@ -122,6 +122,6 @@
 
 **Supplied by the owner (not created by the project):** the ten character portraits (`client/public/characters/`; cartoon faces that appear to be based on real people, whose consent to appear on a public site is the owner's responsibility) and the flag image (`client/public/flag.webp`). They were only cropped, background-removed, resized and converted to WebP; the source and the right to use them are the owner's responsibility and could not be verified here.
 
-**Third-party libraries (not owned by the owner, under their own licenses):** react, react-dom, scheduler (MIT), ws (MIT), zod (MIT) are bundled into the build output, and their license texts are written to `dist/public/third-party-licenses.txt` by `npm run build`. Build and test tooling: esbuild (MIT), typescript (Apache-2.0), playwright (Apache-2.0), and DefinitelyTyped type packages (MIT). **Fonts (not owned by the owner):** Aref Ruqaa (© 2015-2020 The Aref Ruqaa Project Authors) and Readex Pro (© 2018 The Readex Pro Project Authors), both under SIL OFL 1.1, bundled as subset files in `client/public/fonts/` with their license texts; they are not created by this project.
+**Third-party libraries (not owned by the owner, under their own licenses):** react, react-dom, scheduler (MIT), ws (MIT), zod (MIT) are bundled into the build output, and their license texts are written to `dist/public/third-party-licenses.txt` by `npm run build`. Build and test tooling: esbuild (MIT), typescript (Apache-2.0), playwright (Apache-2.0), and DefinitelyTyped type packages (MIT). **Font (not owned by the owner):** Cairo (© 2009 The Cairo Project Authors), under SIL OFL 1.1, bundled as a subset file in `client/public/fonts/` with its license text; it is not created by this project.
 
 **Legal note:** A copyright notice alone does not guarantee legal ownership of every component. Third-party components remain the property of their authors; the rules of Tarneeb are traditional and owned by no one; and the legal status of material produced with AI assistance varies by jurisdiction. `LICENSE` and this file were prepared together with the project and have not been reviewed by a lawyer.

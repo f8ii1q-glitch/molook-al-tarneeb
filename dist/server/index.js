@@ -3766,76 +3766,6 @@ var secureRng = {
   }
 };
 
-// server/db/store.ts
-import { mkdirSync } from "node:fs";
-import { dirname as dirname2 } from "node:path";
-import { DatabaseSync } from "node:sqlite";
-function isHallStore(store2) {
-  return typeof store2 === "object" && store2 !== null && typeof store2.addHallName === "function" && typeof store2.listHallNames === "function";
-}
-var HALL_MAX = 300;
-var SCHEMA_VERSION = 2;
-var SqliteRoomStore = class {
-  db;
-  constructor(path) {
-    if (path !== ":memory:") mkdirSync(dirname2(path), { recursive: true });
-    this.db = new DatabaseSync(path);
-    this.db.exec("PRAGMA journal_mode = WAL");
-    this.db.exec("PRAGMA synchronous = NORMAL");
-    this.migrate();
-  }
-  /** ترحيل بسيط يعتمد على PRAGMA user_version. */
-  migrate() {
-    const row = this.db.prepare("PRAGMA user_version").get();
-    const current = row?.user_version ?? 0;
-    if (current < 1) {
-      this.db.exec(`
-        CREATE TABLE IF NOT EXISTS rooms (
-          code       TEXT PRIMARY KEY,
-          data       TEXT NOT NULL,
-          updated_at INTEGER NOT NULL
-        );
-        CREATE INDEX IF NOT EXISTS idx_rooms_updated_at ON rooms (updated_at);
-      `);
-    }
-    if (current < 2) {
-      this.db.exec(`
-        CREATE TABLE IF NOT EXISTS hall (
-          name_key TEXT PRIMARY KEY,
-          name     TEXT NOT NULL,
-          added_at INTEGER NOT NULL
-        );
-      `);
-    }
-    this.db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
-  }
-  addHallName(name2, key, now) {
-    const result = this.db.prepare("INSERT OR IGNORE INTO hall (name_key, name, added_at) VALUES (?, ?, ?)").run(key, name2, now);
-    if (Number(result.changes) === 0) return false;
-    this.db.prepare("DELETE FROM hall WHERE name_key NOT IN (SELECT name_key FROM hall ORDER BY added_at DESC, rowid DESC LIMIT ?)").run(HALL_MAX);
-    return true;
-  }
-  listHallNames() {
-    return this.db.prepare("SELECT name FROM hall ORDER BY added_at ASC, rowid ASC").all().map((row) => row.name);
-  }
-  save(room) {
-    this.db.prepare(
-      `INSERT INTO rooms (code, data, updated_at) VALUES (?, ?, ?)
-         ON CONFLICT(code) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`
-    ).run(room.code, room.data, room.updatedAt);
-  }
-  remove(code2) {
-    this.db.prepare("DELETE FROM rooms WHERE code = ?").run(code2);
-  }
-  loadAll() {
-    const rows = this.db.prepare("SELECT code, data, updated_at FROM rooms").all();
-    return rows.map((row) => ({ code: row.code, data: row.data, updatedAt: row.updated_at }));
-  }
-  close() {
-    this.db.close();
-  }
-};
-
 // server/http/static.ts
 import { createReadStream, statSync } from "node:fs";
 import { readFileSync } from "node:fs";
@@ -3943,22 +3873,6 @@ function createHttpHandler(options) {
     }
     if (pathname === "/healthz") {
       send(req, res, 200, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }, '{"ok":true}');
-      return;
-    }
-    if (pathname === "/api/hall") {
-      let names = [];
-      try {
-        names = options.hallNames ? options.hallNames() : [];
-      } catch {
-        names = [];
-      }
-      send(
-        req,
-        res,
-        200,
-        { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-cache", ...securityHeaders(req.headers.host, false, isHttps(req)) },
-        JSON.stringify({ names })
-      );
       return;
     }
     const routePath = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
@@ -8733,9 +8647,10 @@ var NEVER = INVALID;
 var code = external_exports.string().max(32);
 var name = external_exports.string().max(120);
 var finiteNumber = external_exports.number().finite();
+var legacyHall = external_exports.boolean().optional();
 var clientMessageSchema = external_exports.discriminatedUnion("t", [
-  external_exports.object({ t: external_exports.literal("create"), name, targetScore: finiteNumber.optional(), hall: external_exports.boolean().optional(), character: external_exports.string().max(24).optional() }).strict(),
-  external_exports.object({ t: external_exports.literal("join"), code, name, hall: external_exports.boolean().optional(), character: external_exports.string().max(24).optional() }).strict(),
+  external_exports.object({ t: external_exports.literal("create"), name, targetScore: finiteNumber.optional(), hall: legacyHall, character: external_exports.string().max(24).optional() }).strict(),
+  external_exports.object({ t: external_exports.literal("join"), code, name, hall: legacyHall, character: external_exports.string().max(24).optional() }).strict(),
   external_exports.object({ t: external_exports.literal("resume"), code, token: external_exports.string().min(1).max(128) }).strict(),
   external_exports.object({ t: external_exports.literal("sit"), seat: finiteNumber }).strict(),
   external_exports.object({ t: external_exports.literal("ready"), ready: external_exports.boolean() }).strict(),
@@ -9074,7 +8989,6 @@ var RoomManager = class {
   limits;
   clock;
   store;
-  hall;
   rng;
   log;
   createLimiter;
@@ -9088,7 +9002,6 @@ var RoomManager = class {
     this.limits = { ...DEFAULT_LIMITS, ...deps.options.limits ?? {} };
     this.clock = deps.clock;
     this.store = deps.store;
-    this.hall = deps.hall;
     this.rng = deps.rng;
     this.log = deps.logger ?? noopLogger;
     const now = () => this.clock.now();
@@ -9238,7 +9151,6 @@ var RoomManager = class {
     this.bind(st, live, 0);
     st.conn.send({ t: "session", code: code2, seat: 0, token });
     this.commit(live, [{ type: "joined", seat: 0 }]);
-    this.registerInHall(name2, msg.hall === true);
     this.log.info(`room ${code2} created`);
   }
   onJoin(st, msg) {
@@ -9270,16 +9182,6 @@ var RoomManager = class {
     this.bind(st, live, freeSeat);
     st.conn.send({ t: "session", code: code2, seat: freeSeat, token });
     this.commit(live, [{ type: "joined", seat: freeSeat }]);
-    this.registerInHall(name2, msg.hall === true);
-  }
-  /** يسجّل الاسم في «قائمة من لا يغلبون الملك» إن وافق اللاعب (الاسم المنظَّف فقط، ولا شيء غيره). */
-  registerInHall(name2, agreed) {
-    if (!agreed || !this.hall) return;
-    try {
-      this.hall.addHallName(name2, nameKey(name2), this.clock.now());
-    } catch (error) {
-      this.log.warn(`failed to record hall name: ${error.message}`);
-    }
   }
   /**
    * إيموجي تعبير: من قائمة ثابتة فقط، وبفاصل أدنى بين رسالتين. لا يغيّر حالة اللعبة ولا يرفع النسخة ولا يُحفظ؛
@@ -9831,7 +9733,6 @@ var systemClock = {
 // server/app.ts
 function createApp(options) {
   const { config: config2 } = options;
-  const hall = options.hall ?? (isHallStore(options.store) ? options.store : void 0);
   const manager = new RoomManager({
     options: {
       trickPauseMs: config2.trickPauseMs,
@@ -9846,10 +9747,9 @@ function createApp(options) {
     clock: options.clock ?? systemClock,
     store: options.store,
     rng: options.rng ?? secureRng,
-    ...hall ? { hall } : {},
     ...options.logger ? { logger: options.logger } : {}
   });
-  const server = createServer(createHttpHandler({ publicDir: config2.publicDir, trustProxy: config2.trustProxy, ...hall ? { hallNames: () => hall.listHallNames() } : {} }));
+  const server = createServer(createHttpHandler({ publicDir: config2.publicDir, trustProxy: config2.trustProxy }));
   server.headersTimeout = 2e4;
   server.requestTimeout = 3e4;
   server.keepAliveTimeout = 1e4;
@@ -9883,6 +9783,57 @@ function createApp(options) {
     }
   };
 }
+
+// server/db/store.ts
+import { mkdirSync } from "node:fs";
+import { dirname as dirname2 } from "node:path";
+import { DatabaseSync } from "node:sqlite";
+var SCHEMA_VERSION = 3;
+var SqliteRoomStore = class {
+  db;
+  constructor(path) {
+    if (path !== ":memory:") mkdirSync(dirname2(path), { recursive: true });
+    this.db = new DatabaseSync(path);
+    this.db.exec("PRAGMA journal_mode = WAL");
+    this.db.exec("PRAGMA synchronous = NORMAL");
+    this.migrate();
+  }
+  /** ترحيل بسيط يعتمد على PRAGMA user_version. */
+  migrate() {
+    const row = this.db.prepare("PRAGMA user_version").get();
+    const current = row?.user_version ?? 0;
+    if (current < 1) {
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS rooms (
+          code       TEXT PRIMARY KEY,
+          data       TEXT NOT NULL,
+          updated_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_rooms_updated_at ON rooms (updated_at);
+      `);
+    }
+    if (current < 3) {
+      this.db.exec("DROP TABLE IF EXISTS hall");
+    }
+    this.db.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
+  }
+  save(room) {
+    this.db.prepare(
+      `INSERT INTO rooms (code, data, updated_at) VALUES (?, ?, ?)
+         ON CONFLICT(code) DO UPDATE SET data = excluded.data, updated_at = excluded.updated_at`
+    ).run(room.code, room.data, room.updatedAt);
+  }
+  remove(code2) {
+    this.db.prepare("DELETE FROM rooms WHERE code = ?").run(code2);
+  }
+  loadAll() {
+    const rows = this.db.prepare("SELECT code, data, updated_at FROM rooms").all();
+    return rows.map((row) => ({ code: row.code, data: row.data, updatedAt: row.updated_at }));
+  }
+  close() {
+    this.db.close();
+  }
+};
 
 // server/index.ts
 var logger = {

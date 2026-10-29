@@ -13,13 +13,13 @@
  */
 'use strict';
 
-const VERSION = '64f1b591d7b8';
+const VERSION = 'a351300ddc54';
 const CACHE = 'molook-' + VERSION;
 const PRECACHE = [
   "/apple-touch-icon.png",
-  "/assets/fonts-a76d58ec.css",
-  "/assets/main-2W4WIPBN.js",
-  "/assets/main-3QFBO7EN.css",
+  "/assets/fonts-eb5b428e.css",
+  "/assets/main-3LXZSWFC.js",
+  "/assets/main-ZAMHY2EY.css",
   "/boot.js",
   "/characters/cheetah.webp",
   "/characters/falcon.webp",
@@ -33,9 +33,7 @@ const PRECACHE = [
   "/characters/zaeem.webp",
   "/favicon.svg",
   "/flag.webp",
-  "/fonts/ArefRuqaa-400.woff",
-  "/fonts/ArefRuqaa-700.woff",
-  "/fonts/ReadexPro-160-700.woff",
+  "/fonts/Cairo-300-900.woff",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/icons/icon-maskable-512.png",
