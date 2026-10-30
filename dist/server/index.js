@@ -4591,7 +4591,7 @@ function projectGame(state, seat) {
 }
 
 // shared/characters.ts
-var CHARACTER_IDS = ["falcon", "wolf", "lion", "shaheen", "tiger", "cheetah", "general", "zaeem", "thunder", "raptor"];
+var CHARACTER_IDS = ["falcon", "wolf", "lion", "shaheen", "tiger", "cheetah", "general", "zaeem", "thunder", "raptor", "sultan", "captain", "volcano"];
 var DEFAULT_CHARACTER = "falcon";
 function isCharacterId(value) {
   return typeof value === "string" && CHARACTER_IDS.includes(value);
